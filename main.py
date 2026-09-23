@@ -7,17 +7,33 @@ import plotly.graph_objects as go
 
 st.set_page_config(page_title="영화 데이터 그래프 도감 2 - 분포와 관계", layout="wide")
 
-DATA_URL = "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_movies.csv"
+# GitHub raw 서버는 공유 IP(Streamlit Cloud 등)에서 종종 403/429로 요청을 막는다.
+# jsDelivr CDN(캐시된 GitHub 파일 제공)을 먼저 시도하고, 실패하면 원본 주소로 재시도한다.
+DATA_URLS = [
+    "https://cdn.jsdelivr.net/gh/greatsong/modudata@main/data/kobis_movies.csv",
+    "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_movies.csv",
+]
 
 
 @st.cache_data
 def load_data():
-    # raw.githubusercontent.com이 기본 User-Agent 요청을 막는 경우가 있어
-    # requests로 헤더를 지정해 받아온 뒤 pandas에 넘긴다.
     headers = {"User-Agent": "Mozilla/5.0 (Streamlit App)"}
-    response = requests.get(DATA_URL, headers=headers, timeout=10)
-    response.raise_for_status()
-    df = pd.read_csv(io.StringIO(response.text))
+    last_error = None
+    df = None
+
+    for url in DATA_URLS:
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            df = pd.read_csv(io.StringIO(response.text))
+            break
+        except Exception as e:  # noqa: BLE001
+            last_error = f"{url} -> {e}"
+            continue
+
+    if df is None:
+        st.error(f"데이터를 불러오지 못했습니다. 마지막 오류: {last_error}")
+        st.stop()
 
     # 개봉일: 8자리 숫자 -> datetime
     df["openDt"] = pd.to_datetime(df["openDt"].astype(str), format="%Y%m%d", errors="coerce")
