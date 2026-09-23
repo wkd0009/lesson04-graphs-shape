@@ -222,9 +222,33 @@ st.info("💡 이 그래프로 알 수 있는 것: ")
 st.divider()
 
 # =========================================================
-# 구역 8. (다음 그래프 자리)
+# 구역 8. 10위권에 오래 머문 영화는 총 관객도 많은가
 # =========================================================
-st.header("8. (다음 그래프 준비 중)")
+st.header("8. 10위권에 오래 머문 영화는 총 관객도 많은가")
+
+fig8 = px.scatter(
+    df,
+    x="days_in_top10",
+    y="total_audi",
+    hover_name="movieNm",
+    title="10위권에 오래 머문 영화는 총 관객도 많은가",
+    labels={"days_in_top10": "10위권에 머문 날수", "total_audi": "총 관객"},
+)
+fig8.update_traces(
+    hovertemplate="<b>%{hovertext}</b><br>10위권 머문 날수: %{x}일<br>총 관객: %{y:,}명<extra></extra>"
+)
+fig8.update_layout(margin=dict(t=20, b=20, l=20, r=20))
+
+st.plotly_chart(fig8, use_container_width=True)
+
+st.info("💡 이 그래프로 알 수 있는 것: ")
+
+st.divider()
+
+# =========================================================
+# 구역 9. (다음 그래프 자리)
+# =========================================================
+st.header("9. (다음 그래프 준비 중)")
 st.caption("이 자리에 다음 그래프가 추가될 예정입니다.")
 
 st.divider()
